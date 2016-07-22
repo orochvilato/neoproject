@@ -1,0 +1,16 @@
+Flask==0.11.1
+Flask-Cors==2.1.2
+Jinja2==2.8
+MarkupSafe==0.23
+PyYAML==3.11
+Werkzeug==0.11.10
+argparse==1.2.1
+click==6.6
+httplib2==0.9.2
+itsdangerous==0.24
+neo4j-driver==1.0.2
+omnijson==0.1.2
+py2neo==3.1.1
+python-dateutil==1.5
+six==1.10.0
+wsgiref==0.1.2
