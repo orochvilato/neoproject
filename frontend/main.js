@@ -1,4 +1,4 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
-ReactDOM.render(<App />, document.getElementById('app'))
+import GraphExplorerApp from './GraphExplorerApp';
+ReactDOM.render(<GraphExplorerApp />, document.getElementById('app'))

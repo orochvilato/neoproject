@@ -56,10 +56,10 @@ const graphProps = {
 
   ],
   edge: [
-    { e:'isType(edge,"CONNECTE_A")', props: { label: 'edge.properties.port || ""',color: 'colors.Network'}},
-    { e:'isType(edge,"EST_PILOTE_PAR")', props: { label: '""',color: 'colors.Wifi'}},
-    { e:'isType(edge,"A_POUR_DISQUE")', props: { label: 'edge.properties.name', color: 'colors.Storage'}},
-    { e:'isType(edge,"A_POUR_HOTE")', props: { label: 'edge.properties.vmid',color: 'colors.VMHost'}}
+    { e:'isType(edge,"CONNECTE_A")', props: { unselectedLabel:'""',selectedLabel: 'edge.properties.port || ""',color: 'colors.Network'}},
+    { e:'isType(edge,"EST_PILOTE_PAR")', props: { unselectedLabel:'""',selectedLabel: '""',color: 'colors.Wifi'}},
+    { e:'isType(edge,"A_POUR_DISQUE")', props: { unselectedLabel:'""', selectedLabel: 'edge.properties.name', color: 'colors.Storage'}},
+    { e:'isType(edge,"A_POUR_HOTE")', props: { unselectedLabel:'""', selectedLabel: 'edge.properties.vmid',color: 'colors.VMHost'}}
   ]
 };
 
@@ -67,7 +67,7 @@ class Graph extends Component {
   constructor(props) {
     super(props);
     this.api = props.api;
-    this.filters = props.filters || { labels:['~WLAN','~Network'], types:['~A_POUR_PASSERELLE'] };
+    this.filters = props.filters || { labels:['~WLAN','~Network','~Promox Cluster'], types:['~A_POUR_PASSERELLE','~A_POUR_NODE'] };
     this.data = {
       nodes: [
           {id: 1, label: 'Node 1', group: 0},
@@ -138,17 +138,22 @@ class Graph extends Component {
         for (var i = 0; i < data.relationships.length; i++) {
           var edge = { from: data.relationships[i].from,
                    to: data.relationships[i].to,
-                   label: data.relationships[i].type,
                    font: { align: 'bottom'},
                    arrows:'to:{scaleFactor:0.2}' };
 
           var props = this.getEdgeProps(data.relationships[i]);
+
+          if (props.unselectedLabel != undefined) {
+            edge.label = props.unselectedLabel;
+          } else {
+            edge.label = data.relationships[i].type;
+          }
           for (var key in props)
             edge[key] = props[key];
           edges.push(edge)
         }
         this.setState({
-          graph:{ nodes:nodes, edges: edges}
+          graph:{ nodes:new vis.DataSet(nodes), edges: new vis.DataSet(edges)}
         });
       }.bind(this));
   };
@@ -174,7 +179,7 @@ class Graph extends Component {
         shadow: true
       },
       layout: {
-        improvedLayout: false,
+        improvedLayout: true,
       }
     };
 
@@ -183,7 +188,10 @@ class Graph extends Component {
         enabled: true,
         direction: 'UD',
         levelSeparation: 100,
-        nodeSpacing: 1
+        nodeSpacing: 1,
+        blockShifting: true,
+        edgeMinimization: true,
+        sortMethod: 'hubsize'
       };
     } else {
       options.layout.hierarchical = {
@@ -196,7 +204,76 @@ class Graph extends Component {
       }
     }
     //new vis.Network(container, this.props.graph, options);
-    new vis.Network(container, this.state.graph, options);
+    var network = new vis.Network(container, this.state.graph, options);
+    function setEdgeLabels(edges,labelstate) {
+      var selection = this.state.graph.edges.get(edges);
+      var updateedges = selection.map(function (edge) {
+        return {id:edge.id, label: edge[labelstate] }
+      });
+      this.state.graph.edges.update(updateedges);
+    };
+
+
+    network.on("selectNode", function (params) {
+
+        // nodes
+        var shownodes = params.nodes.concat(params.edges.map(function(edgeid) {
+          var edge = this.state.graph.edges.get(edgeid);
+          if (params.nodes.indexOf(edge.to)>=0) {
+            return edge.from;
+          } else {
+            return edge.to;
+          }
+        }.bind(this)));
+
+        var shownodes_u = shownodes.map(function(nodeid) {
+          return { id:nodeid, hidden:false}
+        });
+        var hidenodes = this.state.graph.nodes.get().filter(function(node) {
+          return shownodes.indexOf(node.id)<0;
+        }).map(function(node) {
+          return { id:node.id,hidden:true}
+        });
+
+        network.focus(params.nodes[0], {
+          scale:1,
+          animation: true
+        });
+        this.state.graph.nodes.update(shownodes_u.concat(hidenodes));
+        // edges
+        var showedges_u = params.edges.map(function(edgeid) {
+          return { id:edgeid, hidden:false}
+        });
+        var hideedges_u = this.state.graph.edges.get().filter(function(edge) {
+          return params.edges.indexOf(edge.id)<0;
+        }).map(function(edge) {
+          return {id:edge.id,hidden:true}
+        });
+        this.state.graph.edges.update(showedges_u.concat(hideedges_u));
+
+        setEdgeLabels.call(this,params.edges,'selectedLabel');
+    }.bind(this));
+
+    network.on("selectEdge", function (params) {
+        setEdgeLabels.call(this,params.edges,'selectedLabel');
+    }.bind(this));
+
+    network.on("deselectNode", function (params) {
+        if (params.nodes.length==0) {
+          var shownodes = this.state.graph.nodes.get().map(function (node) {
+            return { id:node.id, hidden:false};
+          });
+          var showedges = this.state.graph.edges.get().map(function (edge) {
+            return { id:edge.id, hidden:false};
+          });
+          this.state.graph.nodes.update(shownodes);
+          this.state.graph.edges.update(showedges);
+        }
+        setEdgeLabels.call(this,params.previousSelection.edges,'unselectedLabel');
+    }.bind(this));
+    network.on("deselectEdge", function (params) {
+      setEdgeLabels.call(this,params.previousSelection.edges,'unselectedLabel');
+    }.bind(this));
   }
 
   render() {

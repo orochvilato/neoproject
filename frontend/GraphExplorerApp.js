@@ -5,23 +5,8 @@ import RaisedButton from 'material-ui/RaisedButton';
 import TableExampleComplex from './tableComponent';
 import DialogEditNode from './dialogEditNode';
 import Graph from './react-graph-vis';
-import GraphExplorer from './exploreGraph';
+import GraphExplorer from './graphExplorerComponent';
 
-var data = {
-  nodes: [
-      {id: 1, label: 'Node 1'},
-      {id: 2, label: 'Node 2'},
-      {id: 3, label: 'Node 3'},
-      {id: 4, label: 'Node 4'},
-      {id: 5, label: 'Node 5'}
-    ],
-  edges: [
-      {from: 1, to: 2},
-      {from: 1, to: 3},
-      {from: 2, to: 4},
-      {from: 2, to: 5}
-    ]
-};
 
 
 var injectTapEventPlugin = require("react-tap-event-plugin");
@@ -29,11 +14,15 @@ injectTapEventPlugin();
 
 var $ = require('jquery');
 
-class App extends React.Component {
+class GraphExplorerApp extends React.Component {
   constructor() {
     super();
     this.api ='http://localhost:5000'
-    this.state = { rows: []};
+    this.state = {
+       filters: { labels:['~WLAN','~Network','~Promox Cluster'], types:['~A_POUR_PASSERELLE','~A_POUR_NODE'] },
+       startNodes: [1960]
+    };
+
   }
 
   add(e) {
@@ -64,7 +53,7 @@ class App extends React.Component {
         <MuiThemeProvider>
         <div>
           <div>
-          <GraphExplorer ref='graph' graph={data} api={this.api}/>
+          <GraphExplorer ref='graph' filters={this.state.filters} startNodes={this.state.startNodes} theme='si' api={this.api}/>
           <RaisedButton
             label="Edit"
             onTouchTap={this.edit.bind(this)} />
@@ -88,6 +77,6 @@ class App extends React.Component {
 
 }
 
-App.defaultProps = { txt: 'button', result:''}
+GraphExplorerApp.defaultProps = { txt: 'button', result:''}
 
-export default App
+export default GraphExplorerApp

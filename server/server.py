@@ -54,34 +54,36 @@ def init():
 #RETURN distinct label
 #ORDER BY label
 
+
 @app.route('/getNodesAndRelationships')
 def getNodesAndRelationships():
     # where labels(n)<>['Network']
+    nodeids = request.args.get('nodes')
+    nodeids = nodeids.split(',') if nodeids else []
+    print nodeids
     f = request.args.get('filters')
 
-    filters = json.loads(f) if f else []
+    filters = json.loads(f) if f else {}
     labels = filters.get('labels',[])
     types = filters.get('types',[])
-
+    print labels,types
+    # Relationships
     labelinclude = []
-    labelexclude = []
+    whereclause = []
     from string import Template
     for label in labels:
         if label[0]=='~':
-            labelexclude.append('(not "%s" in LABELS(n))' % label[1:])
+            whereclause.append('(not "%s" in LABELS(n))' % label[1:])
         else:
             labelinclude.append(':%s' % label)
 
     labelinc_q = "".join(labelinclude)
-    labelexc_q = " WHERE %s" % ' AND '.join(labelexclude) if labelexclude else ''
-    nodematch = "MATCH (n%s)%s" % (labelinc_q,labelexc_q)
-    nodequery = nodematch + " RETURN ID(n) as id,n,labels(n) as labels"
+    relwhere = list(whereclause)
+    if len(nodeids)>0:
+        relwhere.append('(ID(n) in [%s])' % ','.join(nodeids))
+    where_q = " WHERE %s" % ' AND '.join(relwhere) if relwhere else ''
 
-    nodes = graph.run(nodequery).data()
-    for node in nodes:
-        node['n'].update({'id':node['id'],'labels':node['labels']})
-
-    # Relationship From
+    nodematch = "MATCH (n%s)%s" % (labelinc_q,where_q)
     relinclude = []
     relexclude = []
     for t in types:
@@ -92,11 +94,28 @@ def getNodesAndRelationships():
 
     relinc_q = "".join(relinclude)
     relexc_q = " WHERE %s" % ' AND '.join(relexclude) if relexclude else ''
-    nodematch = "MATCH (n%s)%s" % (labelinc_q,labelexc_q)
+    nodematch = "MATCH (n%s)%s" % (labelinc_q,where_q)
     relquery = nodematch + " MATCH (n)-[r%s]->(m)%s RETURN ID(n) as from,ID(r) as id,type(r) as type,r as properties,ID(m) as to" % (relinc_q,relexc_q);
     relquery += " UNION "+ nodematch + " MATCH (m)-[r%s]->(n)%s RETURN ID(m) as from,ID(r) as id,type(r) as type,r as properties,ID(n) as to" % (relinc_q,relexc_q);
     print relquery
     relationships = graph.run(relquery).data()
+
+    if len(nodeids)>0:
+        nodeids += list(set([str(r['from']) for r in relationships] + [str(r['to']) for r in relationships]))
+
+    nodewhere  = list(whereclause)
+    if len(nodeids)>0:
+        nodewhere.append('(ID(n) in [%s])' % ','.join(nodeids))
+
+    where_q = " WHERE %s" % ' AND '.join(nodewhere) if nodewhere else ''
+    # Nodes
+    nodematch = "MATCH (n%s)%s" % (labelinc_q,where_q)
+    nodequery = nodematch + " RETURN ID(n) as id,n,labels(n) as labels"
+    print nodequery
+    nodes = graph.run(nodequery).data()
+    for node in nodes:
+        node['n'].update({'id':node['id'],'labels':node['labels']})
+
 
 
     return json.dumps({'nodes':[ node['n'] for node in nodes],'relationships':relationships})
