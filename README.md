@@ -3,7 +3,9 @@
 Install dev environment
 -----------------------
 
+```
   git clone https://github.com/orochvilato/neoproject.git
+```
 
 - In a terminal :
 ```
@@ -20,3 +22,10 @@ Install dev environment
   npm install
   npm start
 ```
+
+TODO
+----
+
+- handle edges (colors, labels show/hide on hover...)
+- chip Component
+- search Component

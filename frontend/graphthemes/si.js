@@ -3,11 +3,15 @@ exports.isType = function(edge,etype) { return edge.type === etype;}
 
 const colors = {
   User: '#03A9F4',
-  VMHost: '#009688',
-  VM: '#4DB6AC',
+  User1: '#81D4FA',
+  VM1: '#80CBC4',
+  VM: '#009688',
   Storage: '#FF9800',
+  Storage1: '#FFCC80',
   Network: '#4CAF50',
-  Wifi: '#673AB7'
+  Network1: '#A5D6A7',
+  Wifi: '#673AB7',
+  Wifi1: '#CE93D8'
 };
 
 exports.graphProps = {
@@ -16,37 +20,44 @@ exports.graphProps = {
                 face: 'FontAwesome',
                 code: '\uf108',
                 size: 40,
-                color: colors.User
+                focus: colors.User,
+                unfocus: colors.User1,
               }}},
     { e:'theme.hasLabel(node,"VM")', props: { shape: 'icon',icon: {
                 face: 'FontAwesome',
                 code: '\uf233',
                 size: 35,
-                color: colors.VM
+                focus: colors.VM,
+                unfocus: colors.VM1
+
               }}},
     { e:'theme.hasLabel(node,"Proxmox Node")', props: { shape: 'icon',icon: {
                 face: 'FontAwesome',
                 code: '\uf233',
-                size: 40,
-                color: colors.VMHost
+                size: 45,
+                focus: colors.VM,
+                unfocus: colors.VM1
               }}},
     { e:'theme.hasLabel(node,"Storage")', props: { shape: 'icon',icon: {
                 face: 'FontAwesome',
                 code: '\uf1c0',
                 size: 40,
-                color: colors.Storage // orange
+                focus: colors.Storage,
+                unfocus: colors.Storage1 // orange
               }}},
     { e:'theme.hasLabel(node,"Switch")', props: { shape: 'icon', icon: {
                 face: 'FontAwesome',
                 code: '\uf0e8',
                 size: 40,
-                color: colors.Network
+                focus: colors.Network,
+                unfocus: colors.Network1
               }}},
     { e:'theme.hasLabel(node,"WIFI")', props: { shape: 'icon', icon: {
                 face: 'FontAwesome',
                 code: '\uf1eb',
                 size: 40,
-                color: colors.Wifi
+                focus: colors.Wifi,
+                unfocus: colors.Wifi1
               }}},
 
   ],

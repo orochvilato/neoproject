@@ -6,7 +6,7 @@ import TableExampleComplex from './tableComponent';
 import DialogEditNode from './dialogEditNode';
 import Graph from './react-graph-vis';
 import GraphExplorer from './graphExplorerComponent';
-
+import NodeChips from './nodeChipsComponent';
 
 
 var injectTapEventPlugin = require("react-tap-event-plugin");
@@ -52,24 +52,9 @@ class GraphExplorerApp extends React.Component {
     return (
         <MuiThemeProvider>
         <div>
-          <div>
+          <NodeChips />
           <GraphExplorer ref='graph' filters={this.state.filters} startNodes={this.state.startNodes} theme='si' api={this.api}/>
-          <RaisedButton
-            label="Edit"
-            onTouchTap={this.edit.bind(this)} />
-
-          <RaisedButton
-            onTouchTap={this.add.bind(this)}
-            label="Add" />
-
-          <RaisedButton
-            onTouchTap={this.del.bind(this)}
-            label="Del" />
-            </div>
-          <DialogEditNode ref='dialogEdit' api={this.api} updateTable={this.updateTable.bind(this)} />
-          <TableExampleComplex ref='mytable' api={this.api} />
         </div>
-
         </MuiThemeProvider>
 
     );
