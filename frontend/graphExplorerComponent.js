@@ -11,10 +11,9 @@ class GraphExplorer extends Component {
   constructor(props) {
     super(props);
     this.api = props.api;
+    this.lasthoveredge = undefined;
     this.filters = props.filters || { labels:['~WLAN','~Network','~Promox Cluster'], types:['~A_POUR_PASSERELLE','~A_POUR_NODE'] };
-
     const {identifier} = this.props;
-
     this.updateGraph = this.updateGraph.bind(this);
     this.graph = { nodes:new vis.DataSet(), edges:new vis.DataSet() };
     this.startNodes = this.props.startNodes;
@@ -24,7 +23,7 @@ class GraphExplorer extends Component {
     this.graphProps = theme.graphProps;
     this.state = {
       graph: this.graph,
-      hierarchicalLayout: true,
+      hierarchicalLayout: false,
       identifier : identifier ? identifier : uuid.v4(),
       style:this.props.style
     };
@@ -66,11 +65,12 @@ class GraphExplorer extends Component {
       function (data) {
 
 
-
+        console.log('path:',this.path);
         var keepnodes = this.path.concat([]);
         var knodes = this.graph.nodes.get(keepnodes);
         if (knodes[0] != undefined) {
           var nodes = knodes.map(function(node) {
+            console.log(node);
             return { id: node.id, label: node.label, focus: node.focus, unfocus: node.unfocus }
           });
         } else {
@@ -121,34 +121,43 @@ class GraphExplorer extends Component {
             edge[key] = props[key];
           edges.push(edge);
         }
+
         this.mergearrays(this.path,explorenodes);
-        console.log(this.path,nodes);
+        //this.path = this.path.concat(explorenodes);
 
         for (var i = 0; i < nodes.length; i++) {
 
           if (nodes[i].icon != undefined) {
             if (this.path.indexOf(nodes[i].id)<0) {
-              console.log('unfocus start',nodes[i]);
               nodes[i].icon.color = nodes[i].unfocus;
             } else {
-              console.log('focus start',nodes[i]);
               nodes[i].icon.color = nodes[i].focus;
             }
-            console.log('end',nodes[i]);
           }
         }
 
 
-        console.log('path',this.path);
+
 
         this.graphKeepNodes(keepnodes);
-        console.log(nodes);
         this.graph.nodes.update(nodes);
         this.graph.edges.update(edges);
-        this.network.selectNodes(explorenodes);
+        //this.network.selectNodes(explorenodes);
+        this.updateChips();
 
       }.bind(this));
   };
+  updateChips() {
+    var nodes = this.graph.nodes.get(this.path);
+    if (nodes[0] != undefined) {
+      var chips = nodes.map(function (node) { return {key:node.id, id:node.id, label:node.label}});
+      this.props.chips(chips);
+    }
+  }
+  updatePath(path) {
+    this.path = path;
+    this.graphKeepNodes(path);
+  }
   graphKeepNodes(keepnodes) {
     var removenodes = this.graph.nodes.get().filter(function(node) {
       return keepnodes.indexOf(node.id)<0;
@@ -174,6 +183,7 @@ class GraphExplorer extends Component {
   updateGraph() {
     let container = document.getElementById(this.state.identifier);
     let options = {
+      interaction:{hover:true},
       nodes: {
         shadow: true
       },
@@ -197,11 +207,7 @@ class GraphExplorer extends Component {
         enabled: false
       };
     }
-    options = {
-      layout: {
-        improvedLayout: false,
-      }
-    }
+
     //new vis.Network(container, this.props.graph, options);
     this.network = new vis.Network(container, this.state.graph, options);
 
@@ -219,12 +225,18 @@ class GraphExplorer extends Component {
 
     }.bind(this));
 
-    this.network.on("selectEdge", function (params) {
-
+    this.network.on("blurEdge", function (params) {
+      //var edge = this.graph.edges.get(params.edge);
+      //this.graph.edges.update({id: edge.id, label: ' '});
     }.bind(this));
 
-    this.network.on("deselectNode", function (params) {
-
+    this.network.on("hoverEdge", function (params) {
+      var edge = this.graph.edges.get(params.edge);
+      if (this.lasthoveredge != undefined) {
+        this.graph.edges.update({id: this.lasthoveredge.id , label: this.lasthoveredge.unselectedLabel});
+      }
+      this.graph.edges.update({id: edge.id, label: edge.selectedLabel});
+      this.lasthoveredge = edge;
     }.bind(this));
 
     this.network.on("deselectEdge", function (params) {

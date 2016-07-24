@@ -32,8 +32,15 @@ export default class NodeChips extends React.Component {
     const chipToDelete = this.chipData.map((chip) => chip.key).indexOf(key);
     this.chipData.splice(chipToDelete, 1);
     this.setState({chipData: this.chipData});
+    this.updateGraph();
   };
-
+  setChips(chips) {
+    console.log(chips);
+    this.setState({chipData:chips});
+  }
+  updateGraph() {
+    this.props.updateGraph(this.state.chipData.map(function(chip) { return chip.id}));
+  }
   renderChip(data) {
     return (
       <Chip
