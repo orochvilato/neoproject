@@ -71,7 +71,7 @@ class GraphExplorer extends Component {
         var knodes = this.graph.nodes.get(keepnodes);
         if (knodes[0] != undefined) {
           var nodes = knodes.map(function(node) {
-            return { id: node.id, label: node.label, icon: { focus: node.icon.focus, unfocus: node.icon.unfocus }}
+            return { id: node.id, label: node.label, focus: node.focus, unfocus: node.unfocus }
           });
         } else {
           var nodes = [];
@@ -94,13 +94,8 @@ class GraphExplorer extends Component {
           for (var key in props) {
             node[key]= JSON.parse(JSON.stringify(props[key]));
           }
-          if (node.icon == undefined) {
-            var iconcolor = node.icon
-          } else {
-            var iconcolor = node.icon.color
-          }
+
           nodes.push(node);
-          console.log('node',data.nodes[i].name,iconcolor);
 
 
 
@@ -132,15 +127,13 @@ class GraphExplorer extends Component {
         for (var i = 0; i < nodes.length; i++) {
 
           if (nodes[i].icon != undefined) {
-            var icon = nodes[i].icon;
             if (this.path.indexOf(nodes[i].id)<0) {
               console.log('unfocus start',nodes[i]);
-              icon.color = icon.unfocus;
+              nodes[i].icon.color = nodes[i].unfocus;
             } else {
               console.log('focus start',nodes[i]);
-              icon.color = icon.focus;
+              nodes[i].icon.color = nodes[i].focus;
             }
-            nodes[i].icon = icon;
             console.log('end',nodes[i]);
           }
         }

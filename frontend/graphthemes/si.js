@@ -16,48 +16,53 @@ const colors = {
 
 exports.graphProps = {
   node: [
-    { e:'theme.hasLabel(node,"PC")', props: { shape: 'icon',icon: {
+    { e:'theme.hasLabel(node,"PC")', props: { shape: 'icon',
+              focus: colors.User,
+              unfocus: colors.User1,
+              icon: {
                 face: 'FontAwesome',
                 code: '\uf108',
-                size: 40,
-                focus: colors.User,
-                unfocus: colors.User1,
+                size: 40
               }}},
-    { e:'theme.hasLabel(node,"VM")', props: { shape: 'icon',icon: {
+    { e:'theme.hasLabel(node,"VM")', props: { shape: 'icon',
+              focus: colors.VM,
+              unfocus: colors.VM1,
+              icon: {
                 face: 'FontAwesome',
                 code: '\uf233',
-                size: 35,
-                focus: colors.VM,
-                unfocus: colors.VM1
-
+                size: 35
               }}},
-    { e:'theme.hasLabel(node,"Proxmox Node")', props: { shape: 'icon',icon: {
+    { e:'theme.hasLabel(node,"Proxmox Node")', props: { shape: 'icon',
+              focus: colors.VM,
+              unfocus: colors.VM1,
+              icon: {
                 face: 'FontAwesome',
                 code: '\uf233',
-                size: 45,
-                focus: colors.VM,
-                unfocus: colors.VM1
+                size: 45
               }}},
-    { e:'theme.hasLabel(node,"Storage")', props: { shape: 'icon',icon: {
+    { e:'theme.hasLabel(node,"Storage")', props: { shape: 'icon',
+              focus: colors.Storage,
+              unfocus: colors.Storage1,
+              icon: {
                 face: 'FontAwesome',
                 code: '\uf1c0',
-                size: 40,
-                focus: colors.Storage,
-                unfocus: colors.Storage1 // orange
+                size: 40
               }}},
-    { e:'theme.hasLabel(node,"Switch")', props: { shape: 'icon', icon: {
+    { e:'theme.hasLabel(node,"Switch")', props: { shape: 'icon',
+              focus: colors.Network,
+              unfocus: colors.Network1,
+              icon: {
                 face: 'FontAwesome',
                 code: '\uf0e8',
-                size: 40,
-                focus: colors.Network,
-                unfocus: colors.Network1
+                size: 40
               }}},
-    { e:'theme.hasLabel(node,"WIFI")', props: { shape: 'icon', icon: {
+    { e:'theme.hasLabel(node,"WIFI")', props: { shape: 'icon',
+              focus: colors.Wifi,
+              unfocus: colors.Wifi1,
+              icon: {
                 face: 'FontAwesome',
                 code: '\uf1eb',
-                size: 40,
-                focus: colors.Wifi,
-                unfocus: colors.Wifi1
+                size: 40
               }}},
 
   ],
