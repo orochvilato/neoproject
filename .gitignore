@@ -4,4 +4,6 @@ frontend/osa/
 include/
 lib/
 local/
+share/
+pip*
 

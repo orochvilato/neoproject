@@ -157,7 +157,12 @@ class GraphExplorer extends Component {
   }
   updatePath(path) {
     this.path = path;
-    this.graphKeepNodes(path);
+    if (path.length>0) {
+      this.graphKeepNodes(path);
+    } else {
+      this.updateGraphData([]);
+    }
+
   }
   graphKeepNodes(keepnodes) {
     var removenodes = this.graph.nodes.get().filter(function(node) {
@@ -186,7 +191,7 @@ class GraphExplorer extends Component {
     let options = {
       interaction:{hover:true},
       nodes: {
-        shadow: true
+        shadow: false
       },
       layout: {
         improvedLayout: true,
@@ -229,11 +234,12 @@ class GraphExplorer extends Component {
 
     this.network.on("blurEdge", function (params) {
         var edge = this.graph.edges.get(params.edge);
-        this.graph.edges.update({id: param.edge , label: edge.unselectedLabel});
+        this.graph.edges.update({id: params.edge , label: edge.unselectedLabel});
     }.bind(this));
 
     this.network.on("hoverEdge", function (params) {
       var edge = this.graph.edges.get(params.edge);
+      console.log(edge);
       if (this.lasthoveredge != undefined) {
         this.graph.edges.update({id: this.lasthoveredge.id , label: this.lasthoveredge.unselectedLabel});
       }

@@ -11,10 +11,7 @@ export default class NodeChips extends React.Component {
   constructor(props) {
     super(props);
     this.state = {chipData: [
-      {key: 0, label: 'Angular'},
-      {key: 1, label: 'JQuery'},
-      {key: 2, label: 'Polymer'},
-      {key: 3, label: 'ReactJS'},
+      
     ]};
     this.styles = {
       chip: {

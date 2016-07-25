@@ -9,13 +9,15 @@
     "fixed-data-table": "^0.6.1",
     "jquery": "^3.1.0",
     "jsep": "^0.3.0",
+    "material-design-icons": "^2.2.3",
     "material-ui": "^0.15.2",
     "materialize-tags": "^1.0.0",
     "react": "^15.2.1",
     "react-dom": "^15.2.1",
     "react-tap-event-plugin": "^1.0.0",
     "uuid": "^2.0.2",
-    "vis": "^4.16.1"
+    "vis": "^4.16.1",
+    "webpack-dev-server": "^1.14.1"
   },
   "devDependencies": {
     "babel-core": "^6.10.4",
