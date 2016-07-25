@@ -142,6 +142,7 @@ class GraphExplorer extends Component {
         this.graphKeepNodes(keepnodes);
         this.graph.nodes.update(nodes);
         this.graph.edges.update(edges);
+        this.network.fit();
         //this.network.selectNodes(explorenodes);
         this.updateChips();
 
@@ -223,6 +224,7 @@ class GraphExplorer extends Component {
         this.expandedNodes = params.nodes;
       }
       this.network.focus(params.nodes[0]);
+      this.network.fit();
     }.bind(this));
 
     this.network.on("blurEdge", function (params) {
