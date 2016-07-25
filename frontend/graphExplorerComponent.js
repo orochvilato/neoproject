@@ -222,12 +222,12 @@ class GraphExplorer extends Component {
         this.updateGraphData(params.nodes);
         this.expandedNodes = params.nodes;
       }
-
+      this.network.focus(params.nodes[0]);
     }.bind(this));
 
     this.network.on("blurEdge", function (params) {
-      //var edge = this.graph.edges.get(params.edge);
-      //this.graph.edges.update({id: edge.id, label: ' '});
+        var edge = this.graph.edges.get(params.edge);
+        this.graph.edges.update({id: param.edge , label: edge.unselectedLabel});
     }.bind(this));
 
     this.network.on("hoverEdge", function (params) {
