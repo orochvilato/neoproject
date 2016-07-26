@@ -5,7 +5,8 @@ from flask import request
 from py2neo import Graph
 import json
 
-graph = Graph("http://neo4j.chilbp.fr:7474/db/data/",password="chilbp")
+graph = Graph("http://localhost:7474/db/data/",password="olivier")
+#graph = Graph("http://neo4j.chilbp.fr:7474/db/data/",password="chilbp")
 
 app = Flask(__name__)
 CORS(app)

@@ -20,7 +20,8 @@ const styles = {
     flexWrap: 'wrap',
   },
   grapharea: {
-    float:'left'
+    float: 'left'
+
   },
   options: {
     width:'200px'
