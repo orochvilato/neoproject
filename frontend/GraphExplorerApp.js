@@ -45,8 +45,8 @@ class GraphExplorerApp extends React.Component {
   setChips(chips) {
     return this._nodechips.setChips(chips);
   }
-  updateGraph(nodes) {
-    return this._graph.updatePath(nodes);
+  graphDeleteFromPath(nodeid) {
+    return this._graph.deleteFromPath(nodeid);
   }
   toggleOptionsDrawer() {
     console.log('toggle');
@@ -59,7 +59,7 @@ class GraphExplorerApp extends React.Component {
           <div style={styles.grapharea}>
             <NodeChips
               ref={(c) => this._nodechips = c}
-              updateGraph = {this.updateGraph.bind(this)} />
+              graphDeleteFromPath = {this.graphDeleteFromPath.bind(this)} />
             <GraphExplorer
               ref={(c) => this._graph = c}
               filters={this.state.filters}

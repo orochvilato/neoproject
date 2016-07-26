@@ -341,11 +341,11 @@ exports.graphProps = {
 
   ],
   edge: [
-    { e:'theme.isType(edge,"CONNECTE_A")', props: { unselectedLabel:'""',selectedLabel: 'edge.properties.port || ""',color: 'theme.colors.Network1'}},
-    { e:'theme.isType(edge,"EST_PILOTE_PAR")', props: { unselectedLabel:'""',selectedLabel: '""',color: 'theme.colors.Wifi1'}},
-    { e:'theme.isType(edge,"A_POUR_DISQUE")', props: { unselectedLabel:'""', selectedLabel: 'edge.properties.path' , color: 'theme.colors.Storage1'}},
-    { e:'theme.isType(edge,"A_POUR_HOTE")', props: { unselectedLabel:'""', selectedLabel: 'edge.properties.vmid',color: 'theme.colors.VM1'}},
-    { e:'theme.isType(edge,"DEFINI_PAR")', props: { unselectedLabel:'""', selectedLabel: '',color: 'theme.colors.User1'}}
+    { e:'theme.isType(edge,"CONNECTE_A")', props: { label:'', title: 'edge.properties.port || ""',color: 'theme.colors.Network1'}},
+    { e:'theme.isType(edge,"EST_PILOTE_PAR")', props: { label:'', color: 'theme.colors.Wifi1'}},
+    { e:'theme.isType(edge,"A_POUR_DISQUE")', props: { label:'', title: 'edge.properties.path' , color: 'theme.colors.Storage1'}},
+    { e:'theme.isType(edge,"A_POUR_HOTE")', props: { label:'', title: 'edge.properties.vmid',color: 'theme.colors.VM1'}},
+    { e:'theme.isType(edge,"DEFINI_PAR")', props: { label:'', title:'"TEST"', color: 'theme.colors.User1'}}
   ]
 };
 

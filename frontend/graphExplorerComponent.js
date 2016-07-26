@@ -15,10 +15,11 @@ class GraphExplorer extends Component {
     this.filters = props.filters || { labels:['~WLAN','~Network','~Promox Cluster'], types:['~A_POUR_PASSERELLE','~A_POUR_NODE'] };
     const {identifier} = this.props;
     this.updateGraph = this.updateGraph.bind(this);
-    this.graph = { nodes:new vis.DataSet(), edges:new vis.DataSet() };
+    this.graph = { };
+    this.fullgraph = { nodes:new vis.DataSet(), edges:new vis.DataSet()};
     this.startNodes = this.props.startNodes;
     this.expandedNodes = [];
-    this.path = [];
+    this.path = {};
     theme = require('./graphthemes/'+this.props.theme)
     this.graphProps = theme.graphProps;
     this.state = {
@@ -60,22 +61,74 @@ class GraphExplorer extends Component {
     }
 
   }
-  updateGraphData(explorenodes) {
+
+  loadFullGraph() {
+    console.log('loadFullGraph()');
+    this.serverRequest = $.getJSON(this.api + '/getNodesAndRelationships?filters=' + JSON.stringify(this.filters),
+      function (data) {
+        var nodes = [];
+        console.log('request : nodes:',data.nodes.length,' edges:',data.relationships.length)
+        for (var i = 0; i < data.nodes.length; i++) {
+          var node = new Object({
+            id: data.nodes[i].id,
+            label: data.nodes[i].name,
+            shape: 'dot',
+            size: 20,
+            borderWidth: 2
+          });
+          var props = this.getNodeProps(data.nodes[i]);
+
+          for (var key in props) {
+            node[key]= JSON.parse(JSON.stringify(props[key]));
+          }
+          if (node.icon != undefined) {
+              node.icon.color = node.unfocus;
+          }
+          nodes.push(node);
+        }
+
+        var edges = [];
+        for (var i = 0; i < data.relationships.length; i++) {
+          var edge = {  id: data.relationships[i].id,
+                  from: data.relationships[i].from,
+                   to: data.relationships[i].to,
+                   font: { align: 'bottom'},
+                   arrows:'to:{scaleFactor:0.05}',
+                 };
+
+          var props = this.getEdgeProps(data.relationships[i]);
+
+          edge.label = data.relationships[i].type;
+
+          for (var key in props)
+            edge[key] = props[key];
+          edges.push(edge);
+        }
+
+        this.fullgraph.nodes.update(nodes);
+        this.fullgraph.edges.update(edges);
+        this.graph = { nodes:new vis.DataSet(this.fullgraph.nodes.get()), edges:new vis.DataSet(this.fullgraph.edges.get()) };
+        this.updateGraph();
+      }.bind(this));
+  };
+
+  updateGraphData(explorenodes=[]) {
+    console.log('expandedNodes: ',this.expandedNodes);
     this.serverRequest = $.getJSON(this.api + '/getNodesAndRelationships?nodes='+explorenodes.join(',')+'&filters=' + JSON.stringify(this.filters),
       function (data) {
 
 
         console.log('path:',this.path);
         var keepnodes = this.path.concat([]);
-        var knodes = this.graph.nodes.get(keepnodes);
-        if (knodes[0] != undefined) {
-          var nodes = knodes.map(function(node) {
-            console.log(node);
-            return { id: node.id, label: node.label, focus: node.focus, unfocus: node.unfocus }
-          });
-        } else {
-          var nodes = [];
+        for (var i=0;i<this.expandedNodes.length;i++) {
+          this.mergearrays(keepnodes,this.graphLinkedNodes(this.expandedNodes[i]));
         }
+        var knodes = this.graph.nodes.get(keepnodes);
+        console.log(knodes);
+        var nodes = knodes.filter(function(node) { return node != undefined;}).map(function(node) {
+            return { id: node.id, label: node.label, focus: node.focus, unfocus: node.unfocus }
+        });
+
 
 
 
@@ -108,15 +161,13 @@ class GraphExplorer extends Component {
                   from: data.relationships[i].from,
                    to: data.relationships[i].to,
                    font: { align: 'bottom'},
-                   arrows:'to:{scaleFactor:0.05}' };
+                   arrows:'to:{scaleFactor:0.05}',
+                 };
 
           var props = this.getEdgeProps(data.relationships[i]);
 
-          if (props.unselectedLabel != undefined) {
-            edge.label = props.unselectedLabel;
-          } else {
-            edge.label = data.relationships[i].type;
-          }
+          edge.label = data.relationships[i].type;
+
           for (var key in props)
             edge[key] = props[key];
           edges.push(edge);
@@ -126,7 +177,6 @@ class GraphExplorer extends Component {
         //this.path = this.path.concat(explorenodes);
 
         for (var i = 0; i < nodes.length; i++) {
-
           if (nodes[i].icon != undefined) {
             if (this.path.indexOf(nodes[i].id)<0) {
               nodes[i].icon.color = nodes[i].unfocus;
@@ -149,47 +199,98 @@ class GraphExplorer extends Component {
       }.bind(this));
   };
   updateChips() {
-    var nodes = this.graph.nodes.get(this.path);
-    if (nodes[0] != undefined) {
-      var chips = nodes.map(function (node) { return {key:node.id, id:node.id, label:node.label}});
-      this.props.chips(chips);
+    var chips = [];
+    for (var nid in this.path) {
+      chips.push(this.path[nid]);
     }
+    this.props.chips(chips);
   }
-  updatePath(path) {
-    this.path = path;
-    if (path.length>0) {
-      this.graphKeepNodes(path);
-    } else {
-      this.updateGraphData([]);
-    }
+  deleteFromPath(nodeid) {
+    delete this.path[nodeid]
+    console.log(this.path);
+    this.buildGraph();
 
   }
-  graphKeepNodes(keepnodes) {
-    var removenodes = this.graph.nodes.get().filter(function(node) {
-      return keepnodes.indexOf(node.id)<0;
-    }).map(function(node) { return node.id;});
 
-    this.graph.nodes.remove(removenodes);
-
-  }
   componentDidMount() {
-    this.updateGraphData(this.startNodes);
-    this.updateGraph();
+    console.log("componentDidMount");
+    //this.updateGraphData(this.startNodes);
+    this.loadFullGraph();
+
   }
 
   componentDidUpdate() {
+    console.log("componentDidUpdate");
     this.updateGraph();
   }
 
   changeMode(event) {
+    console.log("changeMode");
     this.setState({hierarchicalLayout: !this.state.hierarchicalLayout});
     this.updateGraph();
   }
 
+  buildGraph() {
+    console.log('buildGraph, path:',this.path);
+    var nodes = [];
+    var edges = [];
+    // first pass
+    for (var nid in this.path) {
+      var n = this.path[nid];
+      console.log("n ",n," nid ",nid);
+      nodes.push(this.fullgraph.nodes.get(nid));
+      if (n.expand === true) {
+        var expand_edges = this.fullgraph.edges.get().filter(function (edge) {
+          return edge.from === n.id || edge.to === n.id;
+        });
+        var expand_nodes = expand_edges.map(function(edge) {
+          if (edge.from === n.id) {
+            return edge.to
+          } else {
+            return edge.from
+          };
+        });
+        console.log('enodes ',expand_nodes,', eedges ',expand_edges);
+        nodes = nodes.concat(this.fullgraph.nodes.get(expand_nodes).filter(function (node) { return node != null }));
+        console.log('nodes ',nodes)
+      }
+    }
+    // second pass
+    var nodeids = nodes.map(function(node) { return node.id; });
+
+    edges = edges.concat(this.fullgraph.edges.get().filter(function (edge) {
+      return nodeids.indexOf(edge.from)>=0 || nodeids.indexOf(edge.to)>=0;
+    }));
+    var edgeids = edges.map(function(edge) { return edge.id; });
+
+    var nodes_remove = this.graph.nodes.get().filter(function(node) {
+      return nodeids.indexOf(node.id)<0;
+    });
+    var edges_remove = this.graph.edges.get().filter(function(edge) {
+      return edgeids.indexOf(edge.id)<0;
+    });
+    var current_nodeids = this.graph.nodes.get().map(function(node) { return node.id});
+    var current_edgeids = this.graph.nodes.get().map(function(edge) { return edge.id});
+
+    var nodes_add = nodes.filter(function(node) { return current_nodeids.indexOf(node.id)<0; });
+    var edges_add = edges.filter(function(edge) { return current_edgeids.indexOf(edge.id)<0; });
+
+    this.graph.nodes.remove(nodes_remove);
+    this.graph.edges.remove(edges_remove);
+    this.graph.nodes.update(nodes_add);
+    this.graph.edges.update(edges_add);
+    //this.graph.nodes.update(nodes);
+    //this.graph.edges.clear();
+    //this.graph.edges.update(edges);
+    this.network.fit();
+
+    console.log('nodes:', nodes, 'edges:', edges);
+  }
   updateGraph() {
+    console.log("updateGraph")
     let container = document.getElementById(this.state.identifier);
     let options = {
-      interaction:{hover:true},
+      interaction:{hover:false},
       nodes: {
         shadow: false
       },
@@ -215,41 +316,23 @@ class GraphExplorer extends Component {
     }
 
     //new vis.Network(container, this.props.graph, options);
-    this.network = new vis.Network(container, this.state.graph, options);
-
-    this.network.on("select", function (params) {
-      console.log(params,this.expandedNodes,params.nodes[0]);
-      if (this.expandedNodes.indexOf(params.nodes[0])>=0) {
-        this.graphKeepNodes(this.path);
-        this.network.unselectAll();
-        this.expandedNodes = [];
-      } else {
-        console.log('update');
-        this.updateGraphData(params.nodes);
-        this.expandedNodes = params.nodes;
+    console.log("Build network");
+    this.network = new vis.Network(container, this.graph, options);
+    console.log("Build network - done");
+    this.network.on("hold", function (params) {
+      if (params.nodes.length>0) {
+        var nid = params.nodes[0];
+        var n = this.graph.nodes.get(nid);
+        if (nid in this.path) {
+          this.path[nid].expand =  !this.path[nid].expand;
+        } else {
+          this.path[nid] = {id:nid, label:n.label, key:nid, expand:true };
+        }
+        this.buildGraph();
+        this.updateChips();
       }
-      this.network.focus(params.nodes[0]);
-      this.network.fit();
     }.bind(this));
 
-    this.network.on("blurEdge", function (params) {
-        var edge = this.graph.edges.get(params.edge);
-        this.graph.edges.update({id: params.edge , label: edge.unselectedLabel});
-    }.bind(this));
-
-    this.network.on("hoverEdge", function (params) {
-      var edge = this.graph.edges.get(params.edge);
-      console.log(edge);
-      if (this.lasthoveredge != undefined) {
-        this.graph.edges.update({id: this.lasthoveredge.id , label: this.lasthoveredge.unselectedLabel});
-      }
-      this.graph.edges.update({id: edge.id, label: edge.selectedLabel});
-      this.lasthoveredge = edge;
-    }.bind(this));
-
-    this.network.on("deselectEdge", function (params) {
-
-    }.bind(this));
   }
 
   render() {
