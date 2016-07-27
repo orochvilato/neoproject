@@ -49,6 +49,9 @@ class GraphExplorerApp extends React.Component {
   graphDeleteFromPath(nodeid) {
     return this._graph.deleteFromPath(nodeid);
   }
+  graphUpdatePath(path) {
+    return this._graph.updatePath(path)
+  }
   toggleOptionsDrawer() {
     console.log('toggle');
     this.setState({optionsDrawer: !this.state.optionsDrawer});
@@ -60,7 +63,8 @@ class GraphExplorerApp extends React.Component {
           <div style={styles.grapharea}>
             <NodeChips
               ref={(c) => this._nodechips = c}
-              graphDeleteFromPath = {this.graphDeleteFromPath.bind(this)} />
+              graphDeleteFromPath = {this.graphDeleteFromPath.bind(this)}
+              graphUpdatePath = {this.graphUpdatePath.bind(this)} />
             <GraphExplorer
               ref={(c) => this._graph = c}
               filters={this.state.filters}

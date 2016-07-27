@@ -211,7 +211,10 @@ class GraphExplorer extends Component {
     this.buildGraph();
 
   }
-
+  updatePath(path) {
+    this.path = path;
+    this.buildGraph();
+  }
   componentDidMount() {
     console.log("componentDidMount");
     //this.updateGraphData(this.startNodes);

@@ -1,6 +1,7 @@
 import React from 'react';
 import Chip from 'material-ui/Chip';
-
+import Avatar from 'material-ui/Avatar';
+import FontIcon from 'material-ui/FontIcon';
 /**
  * An example of rendering multiple Chips from an array of values. Deleting a chip removes it from the array.
  * Note that since no `onTouchTap` property is defined, the Chip can be focused, but does not gain depth
@@ -13,6 +14,9 @@ export default class NodeChips extends React.Component {
     this.state = {chipData: [
     ]};
     this.styles = {
+      smallIcon: {
+        fontSize:'16px',
+      },
       chip: {
         margin: 4,
       },
@@ -30,19 +34,40 @@ export default class NodeChips extends React.Component {
     this.setState({chipData: this.chipData});
     this.props.graphDeleteFromPath(key);
   };
+  handleTouchTap(key) {
+    this.chipData = this.state.chipData;
+    const chip = this.chipData.map((chip) => chip.key).indexOf(key);
+    this.chipData[chip].expand = !this.chipData[chip].expand;
+    this.setState({chipData: this.chipData});
+    var path = {}
+    for (var i=0;i<this.chipData.length;i++) {
+        path[this.chipData[i].id] = this.chipData[i];
+    }
+    this.props.graphUpdatePath(path);
+  };
   setChips(chips) {
     console.log(chips);
     this.setState({chipData:chips});
   }
 
   renderChip(data) {
+    if (data.expand) {
+      var icon = "fa fa-minus"
+    } else {
+      var icon = "fa fa-plus"
+    }
+    var fi = (
+      <FontIcon className={icon}></FontIcon>
+    )
     return (
       <Chip
         key={data.key}
         onRequestDelete={ this.handleRequestDelete.bind(this,data.key) }
+        onTouchTap={ this.handleTouchTap.bind(this,data.key) }
         style={this.styles.chip}
       >
-        {data.label}
+      <Avatar icon={fi} />
+      {data.label}
       </Chip>
     );
   }
