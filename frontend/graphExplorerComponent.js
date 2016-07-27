@@ -33,7 +33,8 @@ class GraphExplorer extends Component {
     var props = {};
 
     for (var i=0; i<this.graphProps.node.length; i++) {
-      if (eval(this.graphProps.node[i].e)) {
+      var e = this.graphProps.node[i].e;
+      if (node.labels.indexOf(e.label)>=0) {
         for (var key in this.graphProps.node[i].props) {
           props[key] = this.graphProps.node[i].props[key];
         }
@@ -44,7 +45,8 @@ class GraphExplorer extends Component {
   getEdgeProps(edge) {
     var props = new Object();
     for (var i=0; i<this.graphProps.edge.length; i++) {
-      if (eval(this.graphProps.edge[i].e)) {
+      var e = this.graphProps.edge[i].e;
+      if (e.type === edge.type) {
         for (var key in this.graphProps.edge[i].props) {
           props[key] = eval(this.graphProps.edge[i].props[key]);
         }
@@ -112,92 +114,7 @@ class GraphExplorer extends Component {
       }.bind(this));
   };
 
-  updateGraphData(explorenodes=[]) {
-    console.log('expandedNodes: ',this.expandedNodes);
-    this.serverRequest = $.getJSON(this.api + '/getNodesAndRelationships?nodes='+explorenodes.join(',')+'&filters=' + JSON.stringify(this.filters),
-      function (data) {
 
-
-        console.log('path:',this.path);
-        var keepnodes = this.path.concat([]);
-        for (var i=0;i<this.expandedNodes.length;i++) {
-          this.mergearrays(keepnodes,this.graphLinkedNodes(this.expandedNodes[i]));
-        }
-        var knodes = this.graph.nodes.get(keepnodes);
-        console.log(knodes);
-        var nodes = knodes.filter(function(node) { return node != undefined;}).map(function(node) {
-            return { id: node.id, label: node.label, focus: node.focus, unfocus: node.unfocus }
-        });
-
-
-
-
-        for (var i = 0; i < data.nodes.length; i++) {
-
-          var node = new Object({
-            id: data.nodes[i].id,
-            label: data.nodes[i].name,
-            shape: 'dot',
-            size: 20,
-            borderWidth: 2
-          });
-          keepnodes.push(node.id);
-          var props = this.getNodeProps(data.nodes[i]);
-
-          for (var key in props) {
-            node[key]= JSON.parse(JSON.stringify(props[key]));
-          }
-
-          nodes.push(node);
-
-
-
-        }
-
-
-        var edges = [];
-        for (var i = 0; i < data.relationships.length; i++) {
-          var edge = {  id: data.relationships[i].id,
-                  from: data.relationships[i].from,
-                   to: data.relationships[i].to,
-                   font: { align: 'bottom'},
-                   arrows:'to:{scaleFactor:0.05}',
-                 };
-
-          var props = this.getEdgeProps(data.relationships[i]);
-
-          edge.label = data.relationships[i].type;
-
-          for (var key in props)
-            edge[key] = props[key];
-          edges.push(edge);
-        }
-
-        this.mergearrays(this.path,explorenodes);
-        //this.path = this.path.concat(explorenodes);
-
-        for (var i = 0; i < nodes.length; i++) {
-          if (nodes[i].icon != undefined) {
-            if (this.path.indexOf(nodes[i].id)<0) {
-              nodes[i].icon.color = nodes[i].unfocus;
-            } else {
-              nodes[i].icon.color = nodes[i].focus;
-            }
-          }
-        }
-
-
-
-
-        this.graphKeepNodes(keepnodes);
-        this.graph.nodes.update(nodes);
-        this.graph.edges.update(edges);
-        this.network.fit();
-        //this.network.selectNodes(explorenodes);
-        this.updateChips();
-
-      }.bind(this));
-  };
   updateChips() {
     var chips = [];
     for (var nid in this.path) {
@@ -215,6 +132,7 @@ class GraphExplorer extends Component {
     this.path = path;
     this.buildGraph();
   }
+  
   componentDidMount() {
     console.log("componentDidMount");
     //this.updateGraphData(this.startNodes);

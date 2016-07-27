@@ -6,4 +6,4 @@ lib/
 local/
 share/
 pip*
-
+*.log

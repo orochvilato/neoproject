@@ -290,7 +290,7 @@ const colors = {
 
 exports.graphProps = {
   node: [
-    { e:'theme.hasLabel(node,"PC")', props: { shape: 'icon',
+    { e:{ label:'PC'}, props: { shape: 'icon',
               focus: colors.Blue,
               unfocus: colors.Blue300,
               icon: {
@@ -298,7 +298,7 @@ exports.graphProps = {
                 code: '\uf108',
                 size: 40
               }}},
-    { e:'theme.hasLabel(node,"VM")', props: { shape: 'icon',
+    { e:{ label:'VM'}, props: { shape: 'icon',
               focus: colors.Teal,
               unfocus: colors.Teal300,
               icon: {
@@ -306,7 +306,7 @@ exports.graphProps = {
                 code: '\uf233',
                 size: 34
               }}},
-    { e:'theme.hasLabel(node,"Proxmox Node")', props: { shape: 'icon',
+    { e:{ label:'Proxmox Node'}, props: { shape: 'icon',
               focus: colors.Teal,
               unfocus: colors.Teal400,
               icon: {
@@ -314,7 +314,7 @@ exports.graphProps = {
                 code: '\uf233',
                 size: 45
               }}},
-    { e:'theme.hasLabel(node,"Storage")', props: { shape: 'icon',
+    { e:{ label: 'Storage'}, props: { shape: 'icon',
               focus: colors.Orange,
               unfocus: colors.Orange300,
               icon: {
@@ -322,7 +322,7 @@ exports.graphProps = {
                 code: '\uf1c0',
                 size: 40
               }}},
-    { e:'theme.hasLabel(node,"Switch")', props: { shape: 'icon',
+    { e:{label: 'Switch'}, props: { shape: 'icon',
               focus: colors.Green,
               unfocus: colors.Green300,
               icon: {
@@ -330,7 +330,7 @@ exports.graphProps = {
                 code: '\uf0e8',
                 size: 40
               }}},
-    { e:'theme.hasLabel(node,"WIFI")', props: { shape: 'icon',
+    { e:{label:'WIFI'}, props: { shape: 'icon',
               focus: colors.DeepPurple,
               unfocus: colors.DeepPurple300,
               icon: {
@@ -341,11 +341,11 @@ exports.graphProps = {
 
   ],
   edge: [
-    { e:'theme.isType(edge,"CONNECTE_A")', props: { label:'', title: 'edge.properties.port || ""',color: 'theme.colors.Network1'}},
-    { e:'theme.isType(edge,"EST_PILOTE_PAR")', props: { label:'', color: 'theme.colors.Wifi1'}},
-    { e:'theme.isType(edge,"A_POUR_DISQUE")', props: { label:'', title: 'edge.properties.path' , color: 'theme.colors.Storage1'}},
-    { e:'theme.isType(edge,"A_POUR_HOTE")', props: { label:'', title: 'edge.properties.vmid',color: 'theme.colors.VM1'}},
-    { e:'theme.isType(edge,"DEFINI_PAR")', props: { label:'', title:'"TEST"', color: 'theme.colors.User1'}}
+    { e:{type:"CONNECTE_A"}, props: { label:'edge.properties.port || ""',color: 'theme.colors.Network1'}},
+    { e:{type:"EST_PILOTE_PAR"}, props: { label:'', color: 'theme.colors.Wifi1'}},
+    { e:{type:"A_POUR_DISQUE"}, props: { label:'edge.properties.path' , color: 'theme.colors.Storage1'}},
+    { e:{type:"A_POUR_HOTE"}, props: { label:'edge.properties.vmid',color: 'theme.colors.VM1'}},
+    { e:{type:"DEFINI_PAR"}, props: { label:'', color: 'theme.colors.User1'}}
   ]
 };
 
