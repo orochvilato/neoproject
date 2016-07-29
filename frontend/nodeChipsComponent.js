@@ -52,12 +52,12 @@ export default class NodeChips extends React.Component {
 
   renderChip(data) {
     if (data.expand) {
-      var icon = "fa fa-minus"
+      var icon = "fullscreen_exit"
     } else {
-      var icon = "fa fa-plus"
+      var icon = "fullscreen"
     }
     var fi = (
-      <FontIcon className={icon}></FontIcon>
+      <FontIcon className="material-icons">{icon}</FontIcon>
     )
     return (
       <Chip

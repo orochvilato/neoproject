@@ -76,7 +76,8 @@ class GraphExplorer extends Component {
             label: data.nodes[i].name,
             shape: 'dot',
             size: 20,
-            borderWidth: 2
+            borderWidth: 2,
+            data: data.nodes[i]
           });
           var props = this.getNodeProps(data.nodes[i]);
 
@@ -94,8 +95,9 @@ class GraphExplorer extends Component {
           var edge = {  id: data.relationships[i].id,
                   from: data.relationships[i].from,
                    to: data.relationships[i].to,
-                   font: { align: 'bottom'},
+                   font: { align: 'bottom', size:10, face:'roboto'},
                    arrows:'to:{scaleFactor:0.05}',
+                   data: data.relationships[i]
                  };
 
           var props = this.getEdgeProps(data.relationships[i]);
@@ -132,7 +134,7 @@ class GraphExplorer extends Component {
     this.path = path;
     this.buildGraph();
   }
-  
+
   componentDidMount() {
     console.log("componentDidMount");
     //this.updateGraphData(this.startNodes);
@@ -178,9 +180,15 @@ class GraphExplorer extends Component {
     }
     // second pass
     var nodeids = nodes.map(function(node) { return node.id; });
-
+    var pathids = Object.keys(this.path).map(function(k) { return this.path[k].id; }.bind(this));
     edges = edges.concat(this.fullgraph.edges.get().filter(function (edge) {
       return nodeids.indexOf(edge.from)>=0 || nodeids.indexOf(edge.to)>=0;
+    }).map(function (edge) {
+      if ((pathids.indexOf(edge.from)<0) && (pathids.indexOf(edge.to)<0)) {
+        edge.label = "";
+        console.log(pathids,'bingo',edge);
+      }
+      return edge;
     }));
     var edgeids = edges.map(function(edge) { return edge.id; });
 
@@ -193,8 +201,8 @@ class GraphExplorer extends Component {
     var current_nodeids = this.graph.nodes.get().map(function(node) { return node.id});
     var current_edgeids = this.graph.nodes.get().map(function(edge) { return edge.id});
 
-    var nodes_add = nodes.filter(function(node) { return current_nodeids.indexOf(node.id)<0; });
-    var edges_add = edges.filter(function(edge) { return current_edgeids.indexOf(edge.id)<0; });
+    var nodes_add = nodes // nodes.filter(function(node) { return current_nodeids.indexOf(node.id)<0; });
+    var edges_add = edges // edges.filter(function(edge) { return current_edgeids.indexOf(edge.id)<0; });
 
     this.graph.nodes.remove(nodes_remove);
     this.graph.edges.remove(edges_remove);
@@ -253,6 +261,15 @@ class GraphExplorer extends Component {
         this.updateChips();
       }
     }.bind(this));
+    this.network.on("selectNode", function (params) {
+      this.props.info(this.fullgraph.nodes.get(params.nodes).map(function(node) { return node.data; }));
+    }.bind(this))
+    this.network.on("deselectNode", function (params) {
+      if (params.nodes.length==0) {
+        this.props.info([],false);
+      }
+      console.log('deselectNode',params);
+    }.bind(this))
 
   }
 

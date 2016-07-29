@@ -6,6 +6,7 @@ module.exports = {
   },
   devServer: {
     inline: true,
+    host:'0.0.0.0',
     port: 3333,
   },
   module: {
@@ -19,7 +20,7 @@ module.exports = {
           presets: ['es2015','react','stage-2']
         },
       },
-    
+
     ]
   }
 }

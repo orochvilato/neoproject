@@ -344,7 +344,7 @@ exports.graphProps = {
     { e:{type:"CONNECTE_A"}, props: { label:'edge.properties.port || ""',color: 'theme.colors.Network1'}},
     { e:{type:"EST_PILOTE_PAR"}, props: { label:'', color: 'theme.colors.Wifi1'}},
     { e:{type:"A_POUR_DISQUE"}, props: { label:'edge.properties.path' , color: 'theme.colors.Storage1'}},
-    { e:{type:"A_POUR_HOTE"}, props: { label:'edge.properties.vmid',color: 'theme.colors.VM1'}},
+    { e:{type:"A_POUR_HOTE"}, props: { label:'edge.properties.name',color: 'theme.colors.VM1'}},
     { e:{type:"DEFINI_PAR"}, props: { label:'', color: 'theme.colors.User1'}}
   ]
 };
