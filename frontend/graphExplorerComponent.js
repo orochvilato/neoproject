@@ -4,7 +4,7 @@ import {default as React, Component} from 'react';
 const vis = require('vis');
 const uuid = require('uuid');
 var $ = require('jquery');
-var theme = undefined;
+
 
 
 class GraphExplorer extends Component {
@@ -12,7 +12,6 @@ class GraphExplorer extends Component {
     super(props);
     this.api = props.api;
     this.lasthoveredge = undefined;
-    this.filters = props.filters || { labels:['~WLAN','~Network','~Promox Cluster'], types:['~A_POUR_PASSERELLE','~A_POUR_NODE'] };
     const {identifier} = this.props;
     this.updateGraph = this.updateGraph.bind(this);
     this.graph = { };
@@ -20,8 +19,6 @@ class GraphExplorer extends Component {
     this.startNodes = this.props.startNodes;
     this.expandedNodes = [];
     this.path = {};
-    theme = require('./graphthemes/'+this.props.theme)
-    this.graphProps = theme.graphProps;
     this.state = {
       graph: this.graph,
       hierarchicalLayout: false,
@@ -29,31 +26,7 @@ class GraphExplorer extends Component {
       style:this.props.style
     };
   }
-  getNodeProps(node) {
-    var props = {};
 
-    for (var i=0; i<this.graphProps.node.length; i++) {
-      var e = this.graphProps.node[i].e;
-      if (node.labels.indexOf(e.label)>=0) {
-        for (var key in this.graphProps.node[i].props) {
-          props[key] = this.graphProps.node[i].props[key];
-        }
-      }
-    }
-    return props
-  }
-  getEdgeProps(edge) {
-    var props = new Object();
-    for (var i=0; i<this.graphProps.edge.length; i++) {
-      var e = this.graphProps.edge[i].e;
-      if (e.type === edge.type) {
-        for (var key in this.graphProps.edge[i].props) {
-          props[key] = eval(this.graphProps.edge[i].props[key]);
-        }
-      }
-    }
-    return props
-  }
   mergearrays(a1,a2) {
 
     for (var i=0; i<a2.length; i++) {
@@ -64,59 +37,13 @@ class GraphExplorer extends Component {
 
   }
 
-  loadFullGraph() {
-    console.log('loadFullGraph()');
-    this.serverRequest = $.getJSON(this.api + '/getNodesAndRelationships?filters=' + JSON.stringify(this.filters),
-      function (data) {
-        var nodes = [];
-        console.log('request : nodes:',data.nodes.length,' edges:',data.relationships.length)
-        for (var i = 0; i < data.nodes.length; i++) {
-          var node = new Object({
-            id: data.nodes[i].id,
-            label: data.nodes[i].name,
-            shape: 'dot',
-            size: 20,
-            borderWidth: 2,
-            data: data.nodes[i]
-          });
-          var props = this.getNodeProps(data.nodes[i]);
 
-          for (var key in props) {
-            node[key]= JSON.parse(JSON.stringify(props[key]));
-          }
-          if (node.icon != undefined) {
-              node.icon.color = node.unfocus;
-          }
-          nodes.push(node);
-        }
-
-        var edges = [];
-        for (var i = 0; i < data.relationships.length; i++) {
-          var edge = {  id: data.relationships[i].id,
-                  from: data.relationships[i].from,
-                   to: data.relationships[i].to,
-                   font: { align: 'bottom', size:10, face:'roboto'},
-                   arrows:'to:{scaleFactor:0.05}',
-                   data: data.relationships[i]
-                 };
-
-          var props = this.getEdgeProps(data.relationships[i]);
-
-          edge.label = data.relationships[i].type;
-
-          for (var key in props)
-            edge[key] = props[key];
-          edges.push(edge);
-        }
-
-        this.fullgraph.nodes.update(nodes);
-        this.fullgraph.edges.update(edges);
-        this.graph = { nodes:new vis.DataSet(this.fullgraph.nodes.get()), edges:new vis.DataSet(this.fullgraph.edges.get()) };
-        this.updateGraph();
-      }.bind(this));
-  };
-
-
+  updateGraphData(nodes,edges) {
+    this.fullgraph.nodes.update(nodes);
+    this.fullgraph.edges.update(edges);
+    this.graph = { nodes:new vis.DataSet(this.fullgraph.nodes.get()), edges:new vis.DataSet(this.fullgraph.edges.get()) };
+    this.updateGraph();
+  }
   updateChips() {
     var chips = [];
     for (var nid in this.path) {
@@ -130,6 +57,17 @@ class GraphExplorer extends Component {
     this.buildGraph();
 
   }
+  addToPath(nid,expand=false) {
+    var n = this.fullgraph.nodes.get(nid);
+    console.log('addToPath',n,nid);
+    if (!(nid in this.path)) {
+      this.path[nid] = {id:nid, label:n.label, key:nid, expand:expand };
+    }
+
+    this.updateChips();
+    this.buildGraph();
+
+  }
   updatePath(path) {
     this.path = path;
     this.buildGraph();
@@ -137,9 +75,6 @@ class GraphExplorer extends Component {
 
   componentDidMount() {
     console.log("componentDidMount");
-    //this.updateGraphData(this.startNodes);
-    this.loadFullGraph();
-
   }
 
   componentDidUpdate() {

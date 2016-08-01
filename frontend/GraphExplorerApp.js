@@ -12,6 +12,7 @@ import NodeChips from './nodeChipsComponent';
 import InfoDrawer from './infoDrawerComponent';
 import ToolBar from './toolBarComponent';
 
+var theme = undefined;
 
 var injectTapEventPlugin = require("react-tap-event-plugin");
 injectTapEventPlugin();
@@ -36,6 +37,9 @@ class GraphExplorerApp extends React.Component {
   constructor() {
     super();
     this.api ='http://129.184.121.208:5000'
+    this.theme = 'si';
+    theme = require('./graphthemes/'+this.theme)
+    this.graphProps = theme.graphProps;
     this.state = {
        filters: { labels:['~WLAN','~Network','~Promox Cluster'], types:['~A_POUR_PASSERELLE','~A_POUR_NODE'] },
        startNodes: [],
@@ -43,6 +47,86 @@ class GraphExplorerApp extends React.Component {
     };
 
   }
+  componentDidMount() {
+    console.log("componentDidMount");
+    //this.updateGraphData(this.startNodes);
+    this.loadFullGraph();
+
+  }
+
+  getNodeProps(node) {
+    var props = {};
+
+    for (var i=0; i<this.graphProps.node.length; i++) {
+      var e = this.graphProps.node[i].e;
+      if (node.labels.indexOf(e.label)>=0) {
+        for (var key in this.graphProps.node[i].props) {
+          props[key] = this.graphProps.node[i].props[key];
+        }
+      }
+    }
+    return props
+  }
+  getEdgeProps(edge) {
+    var props = new Object();
+    for (var i=0; i<this.graphProps.edge.length; i++) {
+      var e = this.graphProps.edge[i].e;
+      if (e.type === edge.type) {
+        for (var key in this.graphProps.edge[i].props) {
+          props[key] = eval(this.graphProps.edge[i].props[key]);
+        }
+      }
+    }
+    return props
+  }
+  loadFullGraph() {
+    console.log('loadFullGraph()');
+    this.serverRequest = $.getJSON(this.api + '/getNodesAndRelationships?filters=' + JSON.stringify(this.state.filters),
+      function (data) {
+        var nodes = [];
+        console.log('request : nodes:',data.nodes.length,' edges:',data.relationships.length)
+        for (var i = 0; i < data.nodes.length; i++) {
+          var node = new Object({
+            id: data.nodes[i].id,
+            label: data.nodes[i].name,
+            shape: 'dot',
+            size: 20,
+            borderWidth: 2,
+            data: data.nodes[i]
+          });
+          var props = this.getNodeProps(data.nodes[i]);
+
+          for (var key in props) {
+            node[key]= JSON.parse(JSON.stringify(props[key]));
+          }
+          if (node.icon != undefined) {
+              node.icon.color = node.unfocus;
+          }
+          nodes.push(node);
+        }
+
+        var edges = [];
+        for (var i = 0; i < data.relationships.length; i++) {
+          var edge = {  id: data.relationships[i].id,
+                  from: data.relationships[i].from,
+                   to: data.relationships[i].to,
+                   font: { align: 'bottom', size:10, face:'roboto'},
+                   arrows:'to:{scaleFactor:0.05}',
+                   data: data.relationships[i]
+                 };
+
+          var props = this.getEdgeProps(data.relationships[i]);
+
+          edge.label = data.relationships[i].type;
+
+          for (var key in props)
+            edge[key] = props[key];
+          edges.push(edge);
+        }
+        this.updateGraphData(nodes,edges);
+        this.toolBarUpdateNodeList(nodes);
+      }.bind(this));
+  };
 
 
   setChips(chips) {
@@ -56,13 +140,21 @@ class GraphExplorerApp extends React.Component {
     }
     return this._infodrawer.setState({data:data, title:title, open:open});
   }
+  updateGraphData(nodes,edges) {
+    return this._graph.updateGraphData(nodes,edges);
+  }
   graphDeleteFromPath(nodeid) {
     return this._graph.deleteFromPath(nodeid);
   }
   graphUpdatePath(path) {
     return this._graph.updatePath(path)
   }
-
+  toolBarUpdateNodeList(nodes) {
+    return this._toolbar.updateNodeList(nodes);
+  }
+  graphAddNodeToPath(nodeid) {
+    return this._graph.addToPath(nodeid);
+  }
   toggleOptionsDrawer() {
     console.log('toggle');
     this.setState({optionsDrawer: !this.state.optionsDrawer});
@@ -71,7 +163,10 @@ class GraphExplorerApp extends React.Component {
     return (
         <MuiThemeProvider>
         <div style={styles.root}>
-          <ToolBar />
+          <ToolBar
+            ref={(c) => this._toolbar = c}
+            selectNode = {this.graphAddNodeToPath.bind(this)}
+          />
           <div style={styles.grapharea}>
             <NodeChips
               ref={(c) => this._nodechips = c}
@@ -79,12 +174,10 @@ class GraphExplorerApp extends React.Component {
               graphUpdatePath = {this.graphUpdatePath.bind(this)} />
             <GraphExplorer
               ref={(c) => this._graph = c}
-              filters={this.state.filters}
               startNodes={this.state.startNodes}
               chips={this.setChips.bind(this)}
               info={this.setInfo.bind(this)}
-              theme='si'
-              api={this.api}/>
+            />
           </div>
           <InfoDrawer
             ref={(c) => this._infodrawer = c}

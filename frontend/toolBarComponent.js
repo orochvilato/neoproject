@@ -10,66 +10,76 @@ import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui
 import AutoComplete from 'material-ui/AutoComplete';
 
 
-const dataSource1 = [
-  {
-    text: 'text-value1',
-    value: (
-      <MenuItem
-        primaryText="text-value1"
-        secondaryText="&#9786;"
-      />
-    ),
-  },
-  {
-    text: 'text-value2',
-    value: (
-      <MenuItem
-        primaryText="text-value2"
-        secondaryText="&#9786;"
-      />
-    ),
-  },
-];
+const dataSource1 = [];
 
 export default class ToolBar extends React.Component {
 
   constructor(props) {
     super(props);
+    this.graphSelectNode = props.selectNode;
+    this.nodes = {};
     this.state = {
       value: 3,
+      data:dataSource1
     };
   }
+  updateNodeList(nodes) {
+    for (var i=0;i<nodes.length;i++) {
+      this.nodes[nodes[i].label] = nodes[i].id;
+    }
+    var nodelist = nodes.map(function(node) {
+      if (node.className != undefined) {
+        var icon = (<FontIcon
+           className={node.className}
+           color={node.focus} />);
+      } else {
+        var icon;
+      }
 
-  handleChange(event, index, value) {
-    this.setState({value});
+      return ({
+        text: node.label,
+        id: node.id,
+        value : (
+          <MenuItem
+            leftIcon = {icon}
+            primaryText={node.label}
+          />
+        )
+      })
+    });
+    this.setState({data:nodelist});
+
   }
 
+
+  selectNode(n) {
+    console.log(n);
+    if (typeof n === 'string') {
+      if (n in this.nodes) {
+        this.graphSelectNode(this.nodes[n]);
+      }
+    } else {
+      this.graphSelectNode(n.id);
+    }
+    const autocomplete = this._autocomplete;
+    setTimeout(_ => { autocomplete.setState({ searchText: '' }); }, 500);
+  }
   render() {
     return (
       <Toolbar>
         <ToolbarGroup>
           <AutoComplete
-            hintText="text-value data"
-            filter={AutoComplete.noFilter}
-            dataSource={dataSource1}
+            ref={(c) => this._autocomplete = c}
+            hintText="Rechercher"
+            filter={AutoComplete.fuzzyFilter}
+            maxSearchResults={5}
+
+            dataSource={this.state.data}
+            onNewRequest={this.selectNode.bind(this)}
+
           />
         </ToolbarGroup>
-        <ToolbarGroup>
-          <ToolbarTitle text="Options" />
-          <FontIcon className="muidocs-icon-custom-sort" />
-          <ToolbarSeparator />
-          <RaisedButton label="Create Broadcast" primary={true} />
-          <IconMenu
-            iconButtonElement={
-              <IconButton touch={true}>
-                <NavigationExpandMoreIcon />
-              </IconButton>
-            }
-          >
-            <MenuItem primaryText="Download" />
-            <MenuItem primaryText="More Info" />
-          </IconMenu>
-        </ToolbarGroup>
+
       </Toolbar>
     );
   }

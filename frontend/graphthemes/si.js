@@ -293,6 +293,7 @@ exports.graphProps = {
     { e:{ label:'PC'}, props: { shape: 'icon',
               focus: colors.Blue,
               unfocus: colors.Blue300,
+              className: "fa fa-desktop",
               icon: {
                 face: 'FontAwesome',
                 code: '\uf108',
@@ -301,6 +302,7 @@ exports.graphProps = {
     { e:{ label:'VM'}, props: { shape: 'icon',
               focus: colors.Teal,
               unfocus: colors.Teal300,
+              className: "fa fa-server",
               icon: {
                 face: 'FontAwesome',
                 code: '\uf233',
@@ -309,6 +311,7 @@ exports.graphProps = {
     { e:{ label:'Proxmox Node'}, props: { shape: 'icon',
               focus: colors.Teal,
               unfocus: colors.Teal400,
+              className: "fa fa-server",
               icon: {
                 face: 'FontAwesome',
                 code: '\uf233',
@@ -317,6 +320,7 @@ exports.graphProps = {
     { e:{ label: 'Storage'}, props: { shape: 'icon',
               focus: colors.Orange,
               unfocus: colors.Orange300,
+              className: "fa fa-database",
               icon: {
                 face: 'FontAwesome',
                 code: '\uf1c0',
@@ -325,6 +329,7 @@ exports.graphProps = {
     { e:{label: 'Switch'}, props: { shape: 'icon',
               focus: colors.Green,
               unfocus: colors.Green300,
+              className: "fa fa-sitemap",
               icon: {
                 face: 'FontAwesome',
                 code: '\uf0e8',
@@ -333,6 +338,7 @@ exports.graphProps = {
     { e:{label:'WIFI'}, props: { shape: 'icon',
               focus: colors.DeepPurple,
               unfocus: colors.DeepPurple300,
+              className: "fa fa-wifi",
               icon: {
                 face: 'FontAwesome',
                 code: '\uf1eb',
